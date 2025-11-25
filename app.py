@@ -1,59 +1,47 @@
 from flask import Flask, render_template, request, jsonify
 import requests
-from decimal import Decimal
-import re
+import logging
 
 app = Flask(__name__)
+
+# Configuração de Logs
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# URL do seu Webhook n8n
+N8N_WEBHOOK_URL = "https://n8neditor.ljit.com.br/webhook-test/peticionador"
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/submit', methods=['POST'])
+@app.route('/api/submit', methods=['POST'])
 def submit_form():
     try:
-        # Recebe os dados JSON
-        data = request.get_json()
+        data = request.json
         
-        # Validação básica
-        required_fields = ['tipo_acao', 'juizo', 'partes', 'fatos', 'pedido', 'valor_causa']
-        for field in required_fields:
-            if not data.get(field):
-                return jsonify({'success': False, 'error': f'Campo {field} é obrigatório'}), 400
+        # Log para debug
+        logger.info(f"Enviando dados para n8n: {data}")
+
+        # Envia para o n8n
+        response = requests.post(
+            N8N_WEBHOOK_URL, 
+            json=data,
+            headers={"Content-Type": "application/json"},
+            timeout=600 # Timeout generoso para geração de IA
+        )
         
-        # Remove formatação do valor monetário para validação
-        valor_causa = data.get('valor_causa', '').replace('R$', '').replace('.', '').replace(',', '.').strip()
+        response.raise_for_status()
         
-        try:
-            valor_decimal = float(valor_causa)
-            if valor_decimal < 0:
-                return jsonify({'success': False, 'error': 'Valor da causa deve ser positivo'}), 400
-        except ValueError:
-            return jsonify({'success': False, 'error': 'Valor da causa inválido'}), 400
-        
-        # Prepara dados para envio
-        payload = {
-            'tipo_acao': data['tipo_acao'],
-            'juizo': data['juizo'],
-            'partes': data['partes'],
-            'fatos': data['fatos'],
-            'pedido': data['pedido'],
-            'valor_causa': valor_causa
-        }
-        
-        # Envia para o webhook
-        webhook_url = 'https://n8neditor.ljit.com.br/webhook-test/peticionador'
-        response = requests.post(webhook_url, json=payload, timeout=10)
-        
-        if response.status_code in [200, 201, 202]:
-            return jsonify({'success': True, 'message': 'Formulário enviado com sucesso!'}), 200
-        else:
-            return jsonify({'success': False, 'error': f'Erro ao enviar: {response.status_code}'}), 500
-            
+        # Retorna a resposta do n8n para o frontend
+        return jsonify(response.json())
+
     except requests.exceptions.RequestException as e:
-        return jsonify({'success': False, 'error': f'Erro de conexão: {str(e)}'}), 500
+        logger.error(f"Erro na comunicação com n8n: {e}")
+        return jsonify({"error": "Falha ao comunicar com o servidor de processamento.", "details": str(e)}), 500
     except Exception as e:
-        return jsonify({'success': False, 'error': f'Erro interno: {str(e)}'}), 500
+        logger.error(f"Erro interno: {e}")
+        return jsonify({"error": "Erro interno do servidor.", "details": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
