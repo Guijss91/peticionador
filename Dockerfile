@@ -1,45 +1,25 @@
-# Multi-stage build for Tailwind CSS compilation
-FROM node:20-alpine AS tailwind-builder
+# Usa imagem oficial python leve
+FROM python:3.9-slim
 
+# Define diretório de trabalho
 WORKDIR /app
 
-# Install Tailwind CSS
-RUN npm install -D tailwindcss@latest
+# Evita arquivos .pyc e buffer de logs
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Copy Tailwind config and source files
-COPY tailwind.config.js .
-COPY static/src ./static/src
-COPY templates ./templates
+# Instala dependências do sistema (se necessário)
+# RUN apt-get update && apt-get install -y --no-install-recommends gcc
 
-# Build Tailwind CSS
-RUN npx tailwindcss -i ./static/src/input.css -o ./static/dist/output.css --minify
-
-# Python application stage
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install dependencies
+# Copia requirements e instala
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
-COPY app.py .
-COPY templates ./templates
-COPY static ./static
+# Copia o código da aplicação
+COPY . .
 
-# Copy compiled CSS from builder stage
-COPY --from=tailwind-builder /app/static/dist/output.css ./static/dist/output.css
-
-# Create dist directory if it doesn't exist
-RUN mkdir -p static/dist
-
-# Expose port
+# Expõe a porta 5000
 EXPOSE 5000
 
-# Set environment variables
-ENV FLASK_APP=app.py
-ENV PYTHONUNBUFFERED=1
-
-# Run the application
-CMD ["python", "app.py"]
+# Comando para iniciar com Gunicorn (Produção)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
