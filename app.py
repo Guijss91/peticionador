@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # URL do seu Webhook n8n
-N8N_WEBHOOK_URL = "https://n8neditor.ljit.com.br/webhook/peticionador"
+N8N_WEBHOOK_URL = "https://n8neditor.ljit.com.br/webhook-test/peticionador"
 
 @app.route('/')
 def index():
@@ -28,7 +28,7 @@ def submit_form():
             N8N_WEBHOOK_URL, 
             json=data,
             headers={"Content-Type": "application/json"},
-            timeout=60000 # Timeout generoso para geração de IA
+            timeout=600000 # Timeout generoso para geração de IA
         )
         
         response.raise_for_status()
