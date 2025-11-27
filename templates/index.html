@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peticionador Automático</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <div class="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 p-6 sm:p-8">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="file-text" class="text-white w-8 h-8"></i>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-white">Peticionador Automático</h1>
+                </div>
+                <p class="text-indigo-100 mt-2">Preencha os dados e gere sua petição com IA</p>
+            </div>
+
+            <!-- Form -->
+            <form id="petitionForm" class="p-6 sm:p-8 space-y-6">
+                <!-- Assistido -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4 text-indigo-600"></i>
+                        Assistido
+                    </label>
+                    <input type="text" id="Assistido" name="Assistido" 
+                           class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none text-sm"
+                           placeholder="Nome do Assistido" required>
+                </div>
+
+                <!-- Tipo de Ação -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="briefcase" class="w-4 h-4 text-indigo-600"></i>
+                        Tipo de Ação
+                    </label>
+                    <input type="text" id="tipoAcao" name="tipoAcao" 
+                           class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none text-sm"
+                           placeholder="Ex: Ação de Cobrança, Divórcio, etc." required>
+                </div>
+
+                <!-- Vara -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="building" class="w-4 h-4 text-indigo-600"></i>
+                        Vara
+                    </label>
+                    <input type="text" id="vara" name="vara" 
+                           class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none text-sm"
+                           placeholder="Nome da vara judicial" required>
+                </div>
+
+                <!-- Partes (Dinâmico) -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-sm font-medium text-slate-700">Partes</label>
+                        <button type="button" onclick="addParte()" 
+                                class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5">
+                            <i data-lucide="plus" class="w-3 h-3"></i>
+                            Adicionar Parte
+                        </button>
+                    </div>
+                    <div id="partesContainer" class="space-y-3">
+                        <!-- Primeira parte (obrigatória) -->
+                        <div class="parte-item bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <div class="space-y-3">
+                                <div class="flex gap-2 items-start">
+                                    <select class="parte-tipo flex-shrink-0 px-3 py-2 text-sm font-medium rounded-md border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white outline-none">
+                                        <option value="Requerente">Requerente</option>
+                                        <option value="Requerido">Requerido</option>
+                                        <option value="Terceiro">Terceiro</option>
+                                    </select>
+                                    <input type="text" class="parte-nome flex-1 min-w-0 px-3 py-2 text-sm rounded-md border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" 
+                                           placeholder="Nome completo da parte" required>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" class="parte-cpf flex-1 px-3 py-2 text-sm rounded-md border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" 
+                                           placeholder="CPF (ex: 000.000.000-00)">
+                                    <input type="text" class="parte-endereco flex-1 px-3 py-2 text-sm rounded-md border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" 
+                                           placeholder="Endereço completo">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fatos -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="list" class="w-4 h-4 text-indigo-600"></i>
+                        Fatos
+                    </label>
+                    <textarea id="fatos" name="fatos" rows="5"
+                              class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none text-sm resize-none"
+                              placeholder="Descreva os fatos relevantes do caso..." required></textarea>
+                </div>
+
+                <!-- Pedidos -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="target" class="w-4 h-4 text-indigo-600"></i>
+                        Pedidos
+                    </label>
+                    <textarea id="pedidos" name="pedidos" rows="4"
+                              class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none text-sm resize-none"
+                              placeholder="Liste os pedidos desejados..." required></textarea>
+                </div>
+
+                <!-- Botão Enviar -->
+                <button type="submit" id="submitBtn"
+                        class="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold py-3.5 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                    <span id="btnText">Gerar Petição</span>
+                </button>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="hidden mt-4">
+                    <div class="flex items-center justify-center gap-3 text-indigo-600">
+                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Gerando petição com IA...</span>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Resposta -->
+            <div id="responseArea" class="hidden p-6 sm:p-8 border-t border-slate-200 bg-slate-50">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="file-check" class="w-5 h-5 text-green-600"></i>
+                        Petição Gerada
+                    </h2>
+                    <button onclick="copyToClipboard()" 
+                            class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5">
+                        <i data-lucide="copy" class="w-3 h-3"></i>
+                        Copiar
+                    </button>
+                </div>
+                <div id="responseContent" class="bg-white p-4 rounded-lg border border-slate-200 text-sm text-slate-700 whitespace-pre-wrap max-h-96 overflow-y-auto"></div>
+            </div>
+
+            <!-- Erro -->
+            <div id="errorArea" class="hidden p-6 sm:p-8 border-t border-slate-200 bg-red-50">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <h3 class="font-semibold text-red-800">Erro ao processar</h3>
+                        <p id="errorMessage" class="text-sm text-red-700 mt-1"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- Adicionar/Remover Partes Dinamicamente ---
+        function addParte() {
+            const container = document.getElementById('partesContainer');
+            const parteDiv = document.createElement('div');
+            parteDiv.className = 'parte-item bg-slate-50 p-4 rounded-lg border border-slate-200 relative';
+            parteDiv.innerHTML = `
+                <button type="button" onclick="removeParte(this)" 
+                        class="absolute top-2 right-2 text-red-600 hover:text-red-800 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+                <div class="space-y-3">
+                    <div class="flex gap-2 items-start">
+                        <select class="parte-tipo flex-shrink-0 px-3 py-2 text-sm font-medium rounded-md border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white outline-none">
+                            <option value="Autor">Autor</option>
+                            <option value="Réu">Réu</option>
+                            <option value="Terceiro">Terceiro</option>
+                        </select>
+                        <input type="text" class="parte-nome flex-1 min-w-0 px-3 py-2 text-sm rounded-md border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" 
+                               placeholder="Nome completo da parte">
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" class="parte-cpf flex-1 px-3 py-2 text-sm rounded-md border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" 
+                               placeholder="CPF (ex: 000.000.000-00)">
+                        <input type="text" class="parte-endereco flex-1 px-3 py-2 text-sm rounded-md border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none" 
+                               placeholder="Endereço completo">
+                    </div>
+                </div>
+            `;
+            container.appendChild(parteDiv);
+            lucide.createIcons();
+        }
+
+        function removeParte(btn) {
+            btn.closest('.parte-item').remove();
+        }
+
+        function copyToClipboard() {
+            const content = document.getElementById('responseContent').innerText;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('Petição copiada para a área de transferência!');
+            });
+        }
+
+        // --- Envio do Formulário ---
+        document.getElementById('petitionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const responseArea = document.getElementById('responseArea');
+            const errorArea = document.getElementById('errorArea');
+            
+            // Coleta as partes
+            const partesElements = document.querySelectorAll('.parte-item');
+            const partes = Array.from(partesElements).map(p => ({
+                tipo: p.querySelector('.parte-tipo').value,
+                nome: p.querySelector('.parte-nome').value,
+                cpf: p.querySelector('.parte-cpf').value || '',
+                endereco: p.querySelector('.parte-endereco').value || ''
+            }));
+            
+            const formData = {
+                cliente: document.getElementById('cliente').value,
+                tipoAcao: document.getElementById('tipoAcao').value,
+                vara: document.getElementById('vara').value,
+                partes: partes,
+                fatos: document.getElementById('fatos').value,
+                pedidos: document.getElementById('pedidos').value
+            };
+            
+            // UI: Loading state
+            submitBtn.disabled = true;
+            btnText.textContent = 'Processando...';
+            loadingSpinner.classList.remove('hidden');
+            responseArea.classList.add('hidden');
+            errorArea.classList.add('hidden');
+            
+            try {
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+                
+                // Sucesso: mostrar resposta
+                document.getElementById('responseContent').textContent = data.peticao || JSON.stringify(data, null, 2);
+                responseArea.classList.remove('hidden');
+                
+            } catch (error) {
+                // Erro: mostrar mensagem
+                document.getElementById('errorMessage').textContent = error.message;
+                errorArea.classList.remove('hidden');
+                
+            } finally {
+                // Reset UI
+                submitBtn.disabled = false;
+                btnText.textContent = 'Gerar Petição';
+                loadingSpinner.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
