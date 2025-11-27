@@ -22,4 +22,6 @@ COPY . .
 EXPOSE 5000
 
 # Comando para iniciar com Gunicorn (Produção)
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+# --timeout 300: permite requisições de até 5 minutos
+# --workers 4: ajuste conforme recursos disponíveis (CPU cores)
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--timeout", "300", "--workers", "4", "app:app"]
