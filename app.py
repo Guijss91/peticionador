@@ -28,7 +28,7 @@ def submit_form():
             N8N_WEBHOOK_URL, 
             json=data,
             headers={"Content-Type": "application/json"},
-            timeout=6000 # Timeout generoso para geração de IA
+            timeout=60000 # Timeout generoso para geração de IA
         )
         
         response.raise_for_status()
