@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # URL do seu Webhook n8n
-N8N_WEBHOOK_URL = "https://n8neditor.ljit.com.br/webhook-test/peticionador"
+N8N_WEBHOOK_URL = "https://n8nwebhook.ljit.com.br/webhook/peticionador"
 
 @app.route('/')
 def index():
